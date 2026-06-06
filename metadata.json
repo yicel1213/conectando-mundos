@@ -1,0 +1,10 @@
+{
+  "name": "Conectando Mundos",
+  "description": "Una herramienta accesible e interactiva para la comunicación cara a cara con personas sordas mediante transcripción de voz en tiempo real, síntesis de voz, carteles gigantes, pizarra de dibujo y asistencia de IA.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
