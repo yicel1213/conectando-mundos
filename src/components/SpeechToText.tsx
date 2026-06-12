@@ -4,16 +4,18 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, RotateCcw, Volume2, Copy, Send, Trash2, ArrowUpDown } from 'lucide-react';
+import { Mic, MicOff, Copy, Send, Trash2 } from 'lucide-react';
 import { TranscriptionItem } from '../types';
+import { AppLanguage, translations } from '../translations';
 
 interface SpeechToTextProps {
   onSendToAi?: (text: string) => void;
   transcriptionHistory: TranscriptionItem[];
   setTranscriptionHistory: React.Dispatch<React.SetStateAction<TranscriptionItem[]>>;
+  language: AppLanguage;
 }
 
-export default function SpeechToText({ onSendToAi, transcriptionHistory, setTranscriptionHistory }: SpeechToTextProps) {
+export default function SpeechToText({ onSendToAi, transcriptionHistory, setTranscriptionHistory, language }: SpeechToTextProps) {
   const [isListening, setIsListening] = useState(false);
   const [currentText, setCurrentText] = useState('');
   const [lang, setLang] = useState('es-ES');
@@ -24,6 +26,16 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
 
   const recognitionRef = useRef<any>(null);
   const endOfLogRef = useRef<HTMLDivElement>(null);
+
+  const t = translations[language];
+
+  // Map app general language to recognition specific locale standard code
+  useEffect(() => {
+    if (language === 'es') setLang('es-ES');
+    else if (language === 'en') setLang('en-US');
+    else if (language === 'ko') setLang('ko-KR');
+    else if (language === 'ja') setLang('ja-JP');
+  }, [language]);
 
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -86,11 +98,11 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
       rec.onerror = (event: any) => {
         console.error('Speech recognition error', event);
         if (event.error === 'not-allowed') {
-          setErrorMsg('Permiso de micrófono denegado. Por favor, habilítalo en la barra de direcciones.');
+          setErrorMsg(language === 'es' ? 'Permiso de micrófono denegado. Por favor, habilítalo.' : 'Microphone permission denied. Please enable it.');
         } else if (event.error === 'no-speech') {
-          // No-speech can be safely ignored, it will keep listening in continuous mode
+          // Safe to ignore
         } else {
-          setErrorMsg(`Error de dictado: ${event.error}`);
+          setErrorMsg(`${event.error}`);
         }
         setIsListening(false);
       };
@@ -102,7 +114,7 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
       recognitionRef.current = rec;
       rec.start();
     } catch (e: any) {
-      setErrorMsg(`No se pudo iniciar el servicio de dictado: ${e.message}`);
+      setErrorMsg(`Error: ${e.message}`);
       setIsListening(false);
     }
   };
@@ -142,7 +154,7 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
   };
 
   return (
-    <div id="speech-to-text-section" className="flex flex-col h-full bg-white/10 dark:bg-black/30 backdrop-blur-xl rounded-[32px] border border-white/25 dark:border-white/10 shadow-2xl overflow-hidden min-h-[500px] text-white">
+    <div id="speech-to-text-section" className="flex flex-col h-full bg-white/10 dark:bg-black/30 backdrop-blur-xl rounded-[32px] border border-white/25 dark:border-white/10 shadow-2xl overflow-hidden min-h-[500px] text-white animate-fade-in">
       {/* Top action bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-5 border-b border-white/20 dark:border-white/10 bg-white/10 dark:bg-black/20">
         <div className="flex items-center gap-2">
@@ -150,30 +162,26 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
             <button
               id="speaker-other-btn"
               onClick={() => setSpeaker('Oponente')}
-              className={`px-4 py-2 text-xs font-bold rounded-lg transition ${
+              className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 speaker === 'Oponente'
-                  ? 'bg-white text-indigo-700 shadow-lg'
+                  ? 'bg-white text-teal-755 shadow-lg'
                   : 'text-white/70 hover:text-white'
               }`}
             >
-              Habla Oyente
+              {language === 'es' ? 'Habla Oyente' : language === 'ja' ? '相手の話' : language === 'ko' ? '상대방' : 'Opponent'}
             </button>
             <button
               id="speaker-me-btn"
               onClick={() => setSpeaker('Yo')}
-              className={`px-4 py-2 text-xs font-bold rounded-lg transition ${
+              className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 speaker === 'Yo'
-                  ? 'bg-white text-indigo-700 shadow-lg'
+                  ? 'bg-white text-teal-755 shadow-lg'
                   : 'text-white/70 hover:text-white'
               }`}
             >
-              Hablo Yo
+              {language === 'es' ? 'Hablo Yo' : language === 'ja' ? '自分の話' : language === 'ko' ? '나의 말' : 'My Talk'}
             </button>
           </div>
-
-          <span className="text-[10px] uppercase tracking-wider text-white/50 font-mono hidden sm:inline">
-            → Modo dictado
-          </span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -182,8 +190,8 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
             <button
               id="decrease-font-btn"
               onClick={() => setFontSize(Math.max(16, fontSize - 4))}
-              className="px-3.5 py-2 text-sm font-bold text-white hover:bg-white/10 font-mono transition"
-              title="Disminuir tamaño de letra"
+              className="px-3.5 py-2 text-sm font-bold text-white hover:bg-white/10 font-mono transition cursor-pointer"
+              title="A-"
             >
               A-
             </button>
@@ -193,8 +201,8 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
             <button
               id="increase-font-btn"
               onClick={() => setFontSize(Math.min(72, fontSize + 4))}
-              className="px-3.5 py-2 text-sm font-bold text-white hover:bg-white/10 font-mono transition"
-              title="Aumentar tamaño de letra"
+              className="px-3.5 py-2 text-sm font-bold text-white hover:bg-white/10 font-mono transition cursor-pointer"
+              title="A+"
             >
               A+
             </button>
@@ -205,14 +213,18 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
             id="transcription-lang-select"
             value={lang}
             onChange={(e) => setLang(e.target.value)}
-            className="text-xs font-bold bg-white/15 dark:bg-black/30 text-white py-2 px-3 rounded-xl border border-white/20 focus:ring-1 focus:ring-white transition outline-none cursor-pointer"
+            className="text-xs font-bold bg-zinc-950 text-white py-2 px-3 rounded-xl border border-white/20 focus:ring-1 focus:ring-white transition outline-none cursor-pointer"
           >
-            <option value="es-ES" className="text-zinc-900">Español (ES)</option>
-            <option value="es-MX" className="text-zinc-900">Español (MX)</option>
-            <option value="es-AR" className="text-zinc-900">Español (AR)</option>
-            <option value="en-US" className="text-zinc-900">English (US)</option>
-            <option value="pt-BR" className="text-zinc-900">Portugués (BR)</option>
-            <option value="fr-FR" className="text-zinc-900">Français (FR)</option>
+            {language === 'es' ? (
+              <>
+                <option value="es-ES" className="text-white bg-zinc-950">Español (España)</option>
+                <option value="es-MX" className="text-white bg-zinc-950">Español (México)</option>
+                <option value="es-AR" className="text-white bg-zinc-950">Español (Argentina)</option>
+              </>
+            ) : null}
+            <option value="en-US" className="text-white bg-zinc-950">English (US)</option>
+            <option value="ko-KR" className="text-white bg-zinc-950">한국어 (KO)</option>
+            <option value="ja-JP" className="text-white bg-zinc-950">日本語 (JA)</option>
           </select>
         </div>
       </div>
@@ -227,9 +239,11 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
             <div className="w-16 h-16 rounded-full bg-white/10 dark:bg-white/5 flex items-center justify-center mb-4 transition border border-white/20">
               <Mic className="h-6 w-6 text-white" />
             </div>
-            <p className="text-sm font-semibold text-white">Listo para transcribir</p>
+            <p className="text-sm font-semibold text-white">{language === 'es' ? 'Listo transcriptor' : 'Transcriber Ready'}</p>
             <p className="text-xs text-white/70 max-w-sm mt-2 leading-relaxed">
-              Presione el botón redondo de abajo para grabar. El texto hablado aparecerá de inmediato en un tamaño de letra gigante ideal para lectura cómoda.
+              {language === 'es'
+                ? 'Presione el botón redondo de abajo para grabar. El texto se mostrará gigante.'
+                : 'Press the round recording microphone trigger. Speak to display giant sized text characters on-screen.'}
             </p>
           </div>
         )}
@@ -242,12 +256,12 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
             className={`flex flex-col space-y-2 p-5 rounded-[24px] max-w-[85%] transition shadow-lg border backdrop-blur-md ${
               item.speaker === 'Oponente'
                 ? 'bg-white/20 border-white/25 rounded-bl-none self-start text-white animate-fade-in'
-                : 'bg-indigo-600/40 border-white/30 rounded-br-none self-end text-right items-end text-white animate-fade-in'
+                : 'bg-teal-600/40 border-white/30 rounded-br-none self-end text-right items-end text-white animate-fade-in'
             }`}
           >
             <div className="flex items-center gap-2 text-[10px] font-mono font-bold tracking-wider uppercase">
               <span className={item.speaker === 'Oponente' ? 'text-white/60' : 'text-white/75 font-semibold'}>
-                {item.speaker === 'Oponente' ? 'Persona Sorda / Interlocutor' : 'Tú (Voz a Texto)'}
+                {item.speaker === 'Oponente' ? t.speakerOpponent : t.speakerMe}
               </span>
               <span className="text-white/50">{item.timestamp}</span>
             </div>
@@ -263,8 +277,8 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
               <button
                 id={`copy-item-${item.id}`}
                 onClick={() => handleCopyText(item.text)}
-                className="p-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-xl transition border border-white/10"
-                title="Copiar texto"
+                className="p-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-xl transition border border-white/10 cursor-pointer"
+                title="Copy"
               >
                 <Copy className="h-3.5 w-3.5" />
               </button>
@@ -272,8 +286,8 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
                 <button
                   id={`ai-item-${item.id}`}
                   onClick={() => onSendToAi(item.text)}
-                  className="p-2 text-indigo-100 hover:text-white bg-white/10 hover:bg-white/20 rounded-xl transition border border-white/10 flex items-center gap-1 text-xs font-bold"
-                  title="Preguntar a la IA sobre esto"
+                  className="p-2 text-teal-100 hover:text-white bg-white/10 hover:bg-white/20 rounded-xl transition border border-white/10 flex items-center gap-1 text-xs font-bold cursor-pointer"
+                  title={t.consultAiBtn}
                 >
                   <Send className="h-3.5 w-3.5" />
                   <span>IA</span>
@@ -290,12 +304,12 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
             className={`flex flex-col space-y-2 p-5 rounded-[24px] max-w-[85%] border animate-pulse shadow-lg backdrop-blur-md ${
               speaker === 'Oponente'
                 ? 'bg-white/20 border-white/30 self-start text-white rounded-bl-none'
-                : 'bg-indigo-650/30 border-white/30 self-end text-right items-end text-white rounded-br-none'
+                : 'bg-teal-600/30 border-white/30 self-end text-right items-end text-white rounded-br-none'
             }`}
           >
             <div className="flex items-center gap-2 text-[10px] font-mono font-bold tracking-wider uppercase text-white/80">
-              <span className="h-2 w-2 rounded-full bg-red-500 animate-ping"></span>
-              <span>🗣️ Transcribiendo en tiempo real...</span>
+              <span className="h-2 w-2 rounded-full bg-red-505 animate-ping"></span>
+              <span>{t.listeningActive}</span>
             </div>
             <p
               style={{ fontSize: `${fontSize}px`, lineHeight: '1.3' }}
@@ -306,20 +320,17 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
           </div>
         )}
 
-        {/* Anchor point to auto-scroll */}
         <div ref={endOfLogRef} />
       </div>
 
-      {/* Browser Speech Recognition Warning */}
       {!supportSpeech && (
-        <div className="mx-6 my-2 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-xs text-red-200">
-          Tu navegador o iframe actual no soporta el reconocimiento de voz nativo en esta pestaña. 
-          Te recomendamos abrir la aplicación en una <strong>nueva pestaña</strong> o usar Chrome/Safari para la experiencia de dictado por voz. Podrás seguir agregando textos manualmente.
+        <div className="mx-6 my-2 p-4 bg-red-500/10 border border-red-530 rounded-2xl text-xs text-red-200">
+          Recomendamos abrir en una pestaña móvil externa y autorizar el micrófono para utilizar el reconocimiento.
         </div>
       )}
 
       {errorMsg && (
-        <div className="mx-6 my-2 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-xs text-amber-200">
+        <div className="mx-6 my-2 p-4 bg-amber-500/10 border border-amber-510 rounded-2xl text-xs text-amber-200">
           {errorMsg}
         </div>
       )}
@@ -330,10 +341,10 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
           id="clear-transcription-history-btn"
           onClick={handleClearHistory}
           disabled={transcriptionHistory.length === 0 && !currentText}
-          className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-xl transition disabled:opacity-40 disabled:hover:bg-transparent"
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-xl transition disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer"
         >
           <Trash2 className="h-4 w-4" />
-          <span>Borrar todo</span>
+          <span>{t.btnClear}</span>
         </button>
 
         {/* Giant Red Microphone Activation Button */}
@@ -341,12 +352,12 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
           <button
             id="toggle-mic-btn"
             onClick={toggleListening}
-            className={`relative flex items-center justify-center p-6 rounded-full transition-all outline-none focus:ring-4 focus:ring-white/20 ${
+            className={`relative flex items-center justify-center p-6 rounded-full transition-all outline-none focus:ring-4 focus:ring-white/20 cursor-pointer ${
               isListening
-                ? 'bg-red-550 hover:bg-red-600 text-white animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.5)] border border-red-400/50'
-                : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_15px_rgba(79,70,229,0.3)] border border-indigo-400/20'
+                ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.5)] border border-red-400/50'
+                : 'bg-teal-600 hover:bg-teal-500 text-white shadow-[0_0_15px_rgba(13,148,136,0.3)] border border-teal-400/20'
             }`}
-            title={isListening ? 'Detener dictado' : 'Iniciar dictado de voz'}
+            title={isListening ? 'Stop' : 'Go'}
           >
             {isListening ? (
               <MicOff className="h-6 w-6" />
@@ -365,12 +376,12 @@ export default function SpeechToText({ onSendToAi, transcriptionHistory, setTran
         <div className="flex items-center gap-2">
           {isListening ? (
             <div className="flex items-center gap-1 text-xs text-red-300 font-bold tracking-tight animate-pulse font-mono">
-              <span className="h-2.5 w-2.5 rounded-full bg-red-500 animate-ping"></span>
-              <span>ESCUCHANDO</span>
+              <span className="h-2.5 w-2.5 rounded-full bg-red-550 animate-ping"></span>
+              <span>{t.origen}</span>
             </div>
           ) : (
             <div className="text-xs text-white/70 font-semibold font-mono">
-              Listos para grabar
+              {language === 'es' ? 'Listo' : 'Idle'}
             </div>
           )}
         </div>

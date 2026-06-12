@@ -193,7 +193,7 @@ export default function DrawingCanvas() {
       <div className="flex flex-wrap items-center justify-between gap-3 p-5 border-b border-white/20 dark:border-white/10 bg-white/10 dark:bg-black/20">
         <div className="flex items-center gap-4">
           <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
-            <Palette className="h-4.5 w-4.5 text-indigo-200" />
+            <Palette className="h-4.5 w-4.5 text-teal-200" />
             Pizarra de Dibujo Rápido
           </h2>
           
@@ -202,7 +202,7 @@ export default function DrawingCanvas() {
             <button
               id="tool-brush-btn"
               onClick={() => setUseEraser(false)}
-              className={`p-1.5 rounded-lg transition-all cursor-pointer ${!useEraser ? 'bg-white text-indigo-700 shadow-sm font-bold' : 'text-white/70 hover:text-white'}`}
+              className={`p-1.5 rounded-lg transition-all cursor-pointer ${!useEraser ? 'bg-white text-teal-700 shadow-sm font-bold' : 'text-white/70 hover:text-white'}`}
               title="Pincel para dibujar"
             >
               <Edit3 className="h-4.5 w-4.5" />
@@ -210,7 +210,7 @@ export default function DrawingCanvas() {
             <button
               id="tool-eraser-btn"
               onClick={() => setUseEraser(true)}
-              className={`p-1.5 rounded-lg transition-all cursor-pointer ${useEraser ? 'bg-white text-indigo-700 shadow-sm font-bold' : 'text-white/70 hover:text-white'}`}
+              className={`p-1.5 rounded-lg transition-all cursor-pointer ${useEraser ? 'bg-white text-teal-700 shadow-sm font-bold' : 'text-white/70 hover:text-white'}`}
               title="Borrador"
             >
               <Eraser className="h-4.5 w-4.5" />
@@ -282,7 +282,7 @@ export default function DrawingCanvas() {
 
         {/* Floating guidance tag */}
         <div className="absolute bottom-6 left-6 bg-black/75 backdrop-blur-md text-white rounded-xl border border-white/15 py-1 px-3 text-[10px] uppercase tracking-wider font-bold font-mono shadow-md flex items-center gap-1.5 select-none">
-          <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-ping"></span>
+          <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-ping"></span>
           <span>🖌️ Dibuja o escribe libremente</span>
         </div>
       </div>
@@ -301,7 +301,7 @@ export default function DrawingCanvas() {
         <button
           id="canvas-download-btn"
           onClick={downloadCanvasImage}
-          className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white hover:text-indigo-100 bg-indigo-600/40 hover:bg-indigo-600/50 border border-white/20 rounded-xl transition cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white hover:text-teal-100 bg-teal-600/40 hover:bg-teal-600/50 border border-white/20 rounded-xl transition cursor-pointer"
         >
           <Download className="h-4 w-4" />
           <span>Guardar Dibujo</span>
